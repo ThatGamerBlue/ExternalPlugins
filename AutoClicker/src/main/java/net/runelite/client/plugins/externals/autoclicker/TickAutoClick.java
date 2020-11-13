@@ -15,12 +15,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
-import net.runelite.api.GameState;
 import net.runelite.api.Point;
 import net.runelite.api.Skill;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -32,12 +33,12 @@ import org.pf4j.Extension;
 
 @Extension
 @PluginDescriptor(
-	name = "Auto Clicker",
+	name = "Tick-Based Auto Clicker",
 	enabledByDefault = false,
 	type = PluginType.UTILITY
 )
 @Slf4j
-public class AutoClick extends Plugin
+public class TickAutoClick extends Plugin
 {
 	@Inject
 	private Client client;
@@ -96,46 +97,7 @@ public class AutoClick extends Plugin
 		public void hotkeyPressed()
 		{
 			run = !run;
-
-			if (!run)
-			{
-				return;
-			}
-
 			point = client.getMouseCanvasPosition();
-
-			executorService.submit(() ->
-			{
-				while (run)
-				{
-					if (client.getGameState() != GameState.LOGGED_IN)
-					{
-						run = false;
-						break;
-					}
-
-					if (checkHitpoints() || checkInventory())
-					{
-						run = false;
-						if (config.flash())
-						{
-							setFlash(true);
-						}
-						break;
-					}
-
-					extUtils.click(point);
-
-					try
-					{
-						Thread.sleep(randomDelay());
-					}
-					catch (InterruptedException e)
-					{
-						e.printStackTrace();
-					}
-				}
-			});
 		}
 	};
 
@@ -186,5 +148,34 @@ public class AutoClick extends Plugin
 		}
 		final Widget inventoryWidget = client.getWidget(WidgetInfo.INVENTORY);
 		return inventoryWidget.getWidgetItems().size() == 28;
+	}
+
+	@Subscribe
+	private void onGameTick(GameTick event)
+	{
+		if (checkHitpoints() || checkInventory())
+		{
+			run = false;
+			if (config.flash())
+			{
+				setFlash(true);
+			}
+			return;
+		}
+		if (run)
+		{
+			executorService.submit(() ->
+			{
+				try
+				{
+					Thread.sleep(randomDelay());
+					extUtils.click(point);
+				}
+				catch (InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+			});
+		}
 	}
 }

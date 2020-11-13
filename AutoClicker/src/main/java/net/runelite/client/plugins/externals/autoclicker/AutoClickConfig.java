@@ -13,7 +13,7 @@ import net.runelite.client.config.Keybind;
 import net.runelite.client.config.Range;
 import net.runelite.client.config.Title;
 
-@ConfigGroup("autoClickerConfig")
+@ConfigGroup("tickAutoClickerConfig")
 public interface AutoClickConfig extends Config
 {
 	@ConfigTitleSection(

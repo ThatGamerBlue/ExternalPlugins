@@ -19,12 +19,12 @@ class AutoClickOverlay extends Overlay
 {
 	private static final Color FLASH_COLOR = new Color(255, 0, 0, 70);
 	private final Client client;
-	private final AutoClick plugin;
+	private final TickAutoClick plugin;
 	private final AutoClickConfig config;
 	private int timeout;
 
 	@Inject
-	AutoClickOverlay(Client client, AutoClick plugin, AutoClickConfig config)
+	AutoClickOverlay(Client client, TickAutoClick plugin, AutoClickConfig config)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ALWAYS_ON_TOP);
